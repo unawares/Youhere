@@ -38,7 +38,7 @@ def reader(conenction, obj):
         else:
             conenction.send('Invalid Format')
     except Exception as err:
-        conenction.send('Error occured: ' + str(err))
+        conenction.send(err.__class__.__name__, str(err))
 
 
 print('Listening on', (HOST, PORT))
