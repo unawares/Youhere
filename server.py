@@ -2,6 +2,7 @@ import types
 import socket
 import selectors
 import time
+import traceback
 
 from utils import is_valid_request, is_valid_response
 
@@ -34,11 +35,14 @@ def reader(conenction, obj):
             if is_valid_response(response):
                 conenction.send(response)
             else:
+                print('Internal Error')
                 conenction.send('Internal Error')
         else:
-            conenction.send('Invalid Format')
+            print('InvalidFormat : The request is not formatted properly.')
+            conenction.send({'InvalidFormat': 'The request is not formatted properly.'})
     except Exception as err:
-        conenction.send(err.__class__.__name__, str(err))
+        traceback.print_exc()
+        conenction.send({err.__class__.__name__: str(err)})
 
 
 print('Listening on', (HOST, PORT))

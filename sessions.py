@@ -72,7 +72,6 @@ class HistorySession(SessionsManager):
     class Manager(SessionsManager.Manager):
 
         FORMAT = {
-            'person_id': str,
             'found_ids': list,
         }
 

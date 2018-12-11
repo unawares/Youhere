@@ -38,6 +38,9 @@ class Connection:
     def reader(self, func):
         self.listener = func
 
+    def remove(self):
+        self.listener = None
+
     def emit(self, message):
         if type(self.listener) is types.FunctionType:
             self.listener(self, pickle.loads(message))
@@ -57,12 +60,12 @@ class Selector:
             connection=connection,
             address=address,
         )
-        
         self.selector.register(socket, events, data=data)
         return connection
 
     def unregister(self, socket):
         self.selector.unregister(socket)
+        socket.close()
         
     def process(self, key, mask):
         socket = key.fileobj

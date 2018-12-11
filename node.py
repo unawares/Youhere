@@ -7,13 +7,13 @@ import numpy as np
 from urllib.request import urlopen
 from connection import Selector
 
-
 WINDOW_HEIGHT = 560
 
 class Camera(threading.Thread):
     
-    def __init__(self, url, interval):
+    def __init__(self, camera_name, url, interval):
         threading.Thread.__init__(self)
+        self.camera_name = camera_name
         self.url = url
         self.frame = None
         self.last_frame = None
@@ -56,7 +56,8 @@ class Camera(threading.Thread):
 
 class Node:
     
-    def __init__(self, terminal, socket):
+    def __init__(self, name, terminal, socket):
+        self.name = name
         self.terminal = terminal
         self.terminal.init(self)
         self.sent = {}
@@ -65,8 +66,8 @@ class Node:
         self.connection = self.selector.register(socket, socket.getsockname())
         self.delay = 0.0001
 
-    def add(self, url):
-        camera = Camera(url, 3)
+    def add(self, camera_name, url):
+        camera = Camera(camera_name, url, 3)
         camera.setDaemon(True)
         camera.start()
         self.cameras.append(camera)
@@ -86,6 +87,8 @@ class Node:
             'function': 'found',
             'args': [],
             'kwargs': {
+                'place': 'Place 1',
+                'camera': 'Camera 1',
                 'face_encodings': face_encodings
             }
         })
@@ -109,10 +112,10 @@ class Node:
                         cv2.imshow(camera.url, frame)
                         cv2.waitKey(1)
                     if camera.url not in self.sent or last_frame is not self.sent[camera.url][0]:
-                        if camera.url not in self.sent and len(face_locations) > 0:
+                        if camera.url not in self.sent and len(face_encodings) > 0:
                             self.send(face_encodings)
                             self.sent[camera.url] = [last_frame, face_locations, face_encodings]
-                        elif len(face_locations) > 0:
+                        elif len(face_encodings) > 0:
                             matches = face_recognition.compare_faces(self.sent[camera.url][2], face_encoding)
                             new_face_encodings = []
                             for face_encoding, match in zip(face_encodings, matches):
@@ -150,6 +153,7 @@ class Terminal(threading.Thread):
         self.node = node
     
     def destroy(self):
+        self.node.connection.remove()
         self.node = None
 
     def start(self):
@@ -165,20 +169,23 @@ class Terminal(threading.Thread):
                 raise Exception('Not initiated')
             print('[a] Add camera')
             print('[b] Remove camera')
-            choice = input('Choice: ')
+            choice = input('Choice: ').strip()
             if choice == 'a':
-                self.node.add(self.get_url(input('host: ').strip()))
+                camera_name = input('Camera Name: ').strip()
+                url = self.get_url(input('host: ').strip())
+                self.node.add(camera_name, url)
             elif choice == 'b':
                 self.node.remove(self.get_url(input('host: ').strip()))
-        
+            
     def get_url(self, host):
         return 'http://' + host + '/shot.jpg'
             
 
 if __name__ == '__main__':
+    place_name = input('Place name: ')
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(('127.0.0.1', 8080))
     terminal = Terminal()
-    node = Node(terminal, sock)
+    node = Node(place_name, terminal, sock)
     node.mainloop()
 

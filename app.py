@@ -1,7 +1,24 @@
-class App:  
+from apps.node import Node
+from apps.admin import Admin
+from apps.client import Client
+
+class App:
+
     def serve(self, request):
-        return {
-            'app': 'server',
-            'function': 'some',
-            'result': 122,
-        }
+        if request['app'] == 'node':
+            with Node([
+                'found',
+            ]) as actions:
+                return actions.serve(request)
+        
+        if request['app'] == 'admin':
+            with Admin([
+                'add',
+            ]) as actions:
+                return actions.serve(request)
+
+        if request['app'] == 'client':
+            with Client([
+                'position',
+            ]) as actions:
+                return actions.serve(request)

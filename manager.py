@@ -1,6 +1,7 @@
 import os
 import dbm
 import pickle
+import numpy as np
 from datetime import datetime
 from settings import DATABASES_DIR
 
@@ -21,10 +22,10 @@ class DatabaseManager:
         def __init__(self, db):
             self.db = db
 
-        def list(self):
+        def items(self):
             objects = []
             for key in self.db.keys():
-                objects.append(pickle.loads(self.db[key]))
+                objects.append((key.decode('ascii'), pickle.loads(self.db[key])))
             return objects
         
         def create(self, id, obj):
@@ -58,7 +59,7 @@ class DatabaseManager:
             r = True
             r = r and set(obj.keys()) == set(format.keys())
             for key in obj:
-                r = r and type(obj[key]) is format[key]
+                r = r and (type(obj[key]) is format[key] or type(obj[key]) == type(format[key]))
                 if not r:
                     break
             return r
@@ -85,8 +86,8 @@ class PersonsDatabase(DatabaseManager):
             'surname': str,
         }
 
-        def list(self):
-            return super().list()
+        def items(self):
+            return super().items()
 
         def create(self, id, obj):
             if not DatabaseManager.Manager.validate(obj, self.FORMAT):
@@ -124,12 +125,12 @@ class FacesDatabase(DatabaseManager):
 
         FORMAT = {
             'person_id': str,
-            'encoding': list,
+            'encoding': np.array([]),
             'updated': datetime
         }
 
-        def list(self):
-            return super().list()
+        def items(self):
+            return super().items()
 
         def create(self, id, obj):
             if not DatabaseManager.Manager.validate(obj, self.FORMAT):
