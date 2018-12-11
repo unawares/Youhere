@@ -7,6 +7,7 @@ import numpy as np
 from urllib.request import urlopen
 from connection import Selector
 
+
 WINDOW_HEIGHT = 560
 
 class Camera(threading.Thread):

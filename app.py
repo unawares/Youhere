@@ -19,6 +19,6 @@ class App:
 
         if request['app'] == 'client':
             with Client([
-                'position',
+                'last_view',
             ]) as actions:
                 return actions.serve(request)

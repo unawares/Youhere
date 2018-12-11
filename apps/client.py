@@ -14,7 +14,7 @@ from utils import (
 
 class Client(Base):
 
-    FUNCTIONS = ['view']
+    FUNCTIONS = ['last_view']
 
     class Actions(Base.Actions):
 

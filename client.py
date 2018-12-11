@@ -52,12 +52,12 @@ class Terminal(threading.Thread):
         pass
 
     def read(self):
-        while self.responses == 0:
+        while len(self.responses) == 0:
             time.sleep(self.delay)
         return self.responses.pop(0)
 
-    def reader(self, response):
-        self.responses.append(response)
+    def reader(self, connection, response):
+        self.responses.append((connection, response))
 
     def destroy(self):
         self.client.connection.remove()
@@ -76,12 +76,3 @@ class Terminal(threading.Thread):
                 raise Exception('Not initiated')
             self.loop()
             time.sleep(self.delay)
-
-
-if __name__ == '__main__':
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('127.0.0.1', 8080))
-    terminal = Terminal()
-    client = Client(terminal, sock)
-    client.mainloop()
-

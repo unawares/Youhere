@@ -42,7 +42,7 @@ class Connection:
         self.listener = None
 
     def emit(self, message):
-        if type(self.listener) is types.FunctionType:
+        if type(self.listener) is types.FunctionType or hasattr(self.listener, '__call__'):
             self.listener(self, pickle.loads(message))
     
     
